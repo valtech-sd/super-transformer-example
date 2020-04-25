@@ -5,6 +5,6 @@
   "author": "Eric Soto <eric.soto@valtech.com>",
   "license": "MIT",
   "dependencies": {
-    "super-transformer": "^1.0.3"
+    "super-transformer": "^1.0.5"
   }
 }
