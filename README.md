@@ -79,7 +79,7 @@ console.log(templateOutput);
 // {  "customerName": "John"}
 ```
 
-> **Note:** The above example uses `TemplateHelper.applyTemplateWithFilePath()` which expects to receive the path to a template, reads it, then performs the transformation. However, the super-transformer package also provides a method `TemplateHelper.applyTemplate()` that takes in a template body directly as a string. This is useful when you don't need to read your template to file (for instance, if you're caching the templates or storing/fetching templates from a DB or some other string source.)
+> **Note:** The above example uses `TemplateHelper.applyTemplateWithFilePath()` which expects to receive the path to a template, reads it, then performs the transformation. However, the super-transformer package also provides a method `TemplateHelper.applyTemplate()` that takes in a template body directly as a string. This is useful when you don't need to read your template from file (for instance, if you're caching the templates or storing/fetching templates from a DB or some other string source.)
 
 See the example file provided to try out this example: **example-using-TemplateHelper.js**.
 
