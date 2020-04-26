@@ -9,10 +9,13 @@ const contextData = {
 };
 
 // Apply a template to your data
-const templateOutput = TemplateHelper.applyTemplate(
+const templateOutput = TemplateHelper.applyTemplateWithFilePath(
   './templates/simple-example.json',
   contextData
 );
 
 // Do whatever you want with the templateOutput
 console.log(templateOutput);
+
+// Outputs
+// {  "customerName": "John"}
