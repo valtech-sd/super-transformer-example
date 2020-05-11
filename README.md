@@ -47,6 +47,16 @@ Be sure to pass a comma delimited string, properly quoted, and with the same col
 
 If you want to parse out multi-line strings, see below for how to use the **XSVHelper** class directly in your own project. 
 
+The script **transformDelimited.js** can also accept column names embedded in the CSV string as input. In this case, the "-c" argument must not be passed. The script then applies a template to that input data to produce a string output.
+
+You can use it like this:
+
+```bash
+$   node ./node_modules/super-transformer/transformDelimited.js -t './templates/simple-example-flat.json' -i 'first_name, last_name, customer_city, hire_year\n"john", "smith", "Davenport, FL", 2017' -d ',' 
+```
+
+Be sure to pass a comma delimited string, properly quoted, with the first row representing column names. Also, the string must only contain one newline characters (\n) between row 1 (the column names) and row 2 (the data row) since those will cause the parser to fetch multiple rows. Beyond the two rows, in this mode of inferring column names **transformDelimited.js** will ignore additional lines a multi-line CSV string.
+
 ### Use the the package classes directly in your own code
 
 You may also use the helper classes directly in your project as demonstrated below.
@@ -83,7 +93,7 @@ console.log(templateOutput);
 
 See the example file provided to try out this example: **example-using-TemplateHelper.js**.
 
-__**XSVHelper**__
+__**XSVHelper with explicit column names**__
 
 **XSVHelper** is a class (a very thin wrapper around csv-parse) that parses out a CSV string (and a column layout) into a JSON object. The returned object is always an array of objects, actually. Note that if the passed CSV string has newline characters (\n), the parser will add multiple items into the array as demonstrated in the example below.
 
@@ -122,6 +132,44 @@ console.log(parsedJsonObject);
 ``` 
 
 See the example file provided to try out this example: **example-using-XSVHelper.js**.
+
+__**XSVHelper with inferred column names**__
+
+**XSVHelper** is a class (a very thin wrapper around csv-parse) that parses out a CSV string (and a column layout) into a JSON object. The returned object is always an array of objects, actually. Note that if the passed CSV string has newline characters (\n) except between row 1 (column names) and row 2 (data row), the parser will add multiple items into the array as demonstrated in the example below.
+
+```javascript
+// Include the library
+const XSVHelper = require('super-transformer').XSVHelper;
+
+// Create inputs to suit our needs, notice the \n is actually causing the string to contain TWO csv lines!
+const inputCSVString = 'first_name, last_name, customer_city, hire_year\n"john", "smith", "Davenport, FL", 2017\n"mary", "jones", "Orlando, FL", 2018';
+// Delimit with a comma
+const delimiter = ',';
+
+// Parse out the CSV into an object
+const parsedJsonObject = XSVHelper.parseXsvAndInferColumns(inputCSVString, delimiter);
+
+// Do whatever you want with the parsedObject. It's really an object though the console.log will output as a string!
+console.log(parsedJsonObject);
+
+// Outputs
+// [
+//   {
+//     first_name: 'john',
+//     last_name: 'smith',
+//     customer_city: 'Davenport, FL',
+//     hire_year: '2017'
+//   },
+//   {
+//     first_name: 'mary',
+//     last_name: 'jones',
+//     customer_city: 'Orlando, FL',
+//     hire_year: '2018'
+//   }
+// ]
+``` 
+
+See the example file provided to try out this example: **example-using-XSVHelper-column-names-in-file.js**.
 
 ## Templates
 
