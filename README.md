@@ -47,12 +47,12 @@ Be sure to pass a comma delimited string, properly quoted, and with the same col
 
 If you want to parse out multi-line strings, see below for how to use the **XSVHelper** class directly in your own project. 
 
-The script **transformDelimited.js** can also accept column names embedded in the CSV string as input. In this case, the "-c" argument must not be passed. The script then applies a template to that input data to produce a string output.
+The script **transformDelimited.js** can also accept column names embedded in the CSV string as input. In this case, the "-n" argument must be passed but not the "-c" argument. The script then applies a template to that input data to produce a string output.
 
 You can use it like this:
 
 ```bash
-$   node ./node_modules/super-transformer/transformDelimited.js -t './templates/simple-example-flat.json' -i 'first_name, last_name, customer_city, hire_year\n"john", "smith", "Davenport, FL", 2017' -d ',' 
+$   node ./node_modules/super-transformer/transformDelimited.js -t './templates/simple-example-flat.json' -i 'first_name, last_name, customer_city, hire_year\n"john", "smith", "Davenport, FL", 2017' -d ',' -n
 ```
 
 Be sure to pass a comma delimited string, properly quoted, with the first row representing column names. Also, the string must only contain one newline characters (\n) between row 1 (the column names) and row 2 (the data row) since those will cause the parser to fetch multiple rows. Beyond the two rows, in this mode of inferring column names **transformDelimited.js** will ignore additional lines a multi-line CSV string.
