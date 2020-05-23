@@ -1,10 +1,10 @@
 {
   "name": "super-transformer-example",
-  "version": "1.0.2",
+  "version": "3.1.0",
   "description": "An example project that uses the super-transformer NPM package.",
   "author": "Eric Soto <eric.soto@valtech.com>",
   "license": "MIT",
   "dependencies": {
-    "super-transformer": "^1.2.0"
+    "super-transformer": "^3.1.0"
   }
 }

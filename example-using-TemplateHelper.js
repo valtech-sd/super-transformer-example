@@ -10,7 +10,7 @@ const contextData = {
 
 // Apply a template to your data
 const templateOutput = TemplateHelper.applyTemplateWithFilePath(
-  './templates/simple-example.json',
+  './templates/simple-example.hbs',
   contextData
 );
 

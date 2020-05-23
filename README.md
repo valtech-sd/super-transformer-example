@@ -29,10 +29,22 @@ The script **transformJSON.js** will take a JSON string as input and apply a tem
 You can use it like this:
 
 ```bash
-$  node ./node_modules/super-transformer/transformJSON.js -t './templates/simple-example.json' -i '{"customer": {"name": "John"}}'
+$  node ./node_modules/super-transformer/transformJSON.js -t './templates/simple-example.hbs' -i '{"customer": {"name": "John"}}'
 ```
 
 Be sure to pass a valid JSON string in the **-i** argument, otherwise, the script will end with an error!
+
+****transformJSON-file.js****
+
+The script **transformJSON.js** will take a file of JSON lines (a properly formed JSON object, one per line) as input and apply a template to each line in the file to produce string output, also line delimited.
+
+You can use it like this:
+
+```bash
+$  node ./node_modules/super-transformer/transformJSON-file.js -t './templates/simple-example.hbs' -i './data/simple-json-01.txt'
+```
+
+Be sure to pass the correct path of a valid JSON line-ny-line file in the **-i** argument, otherwise, the script will end with an error! Also, each line of the file must contain a complete properly formed JSON object. The file must not contain an array of JSON objects, instead each line must be a complete JSON object.
 
 ****transformDelimited.js****
 
@@ -41,28 +53,30 @@ The script **transformDelimited.js** will take a CSV string as input, a column l
 You can use it like this:
 
 ```bash
-$   node ./node_modules/super-transformer/transformDelimited.js -t './templates/simple-example-flat.json' -i '"john", "smith", "Davenport, FL", 2017' -d ',' -c 'first_name, last_name, customer_city, hire_year'
+$   node ./node_modules/super-transformer/transformDelimited.js -t './templates/simple-example-flat.hbs' -i '"john", "smith", "Davenport, FL", 2017' -d ',' -c 'first_name, last_name, customer_city, hire_year'
 ```
 
 Be sure to pass a comma delimited string, properly quoted, and with the same column count as the **-c** argument. Also, the string should not contain any newline characters (\n) since those will cause the parser to fetch multiple rows. **transformDelimited.js** will ignore all but the first line in a multi-line CSV string.
 
 If you want to parse out multi-line strings, see below for how to use the **XSVHelper** class directly in your own project.
 
-The script **transformDelimited.js** can also accept column names embedded in the CSV string as input. In this case, the "-n" argument must be passed but not the "-c" argument. The script then applies a template to that input data to produce a string output.
+****transformDelimited-file.js****
+
+The script **transformDelimited.js** will take a CSV file as input, a column layout and then apply a template to the input file to produce a string output, line by line.
 
 You can use it like this:
 
 ```bash
-$   node ./node_modules/super-transformer/transformDelimited.js -t './templates/simple-example-flat.json' -i 'first_name, last_name, customer_city, hire_year\n"john", "smith", "Davenport, FL", 2017' -d ',' -n
+$   node ./node_modules/super-transformer/transformDelimited-file.js -t './templates/simple-example-flat.hbs' -i './data/simple-csv-01.txt' -d ',' -n
 ```
 
-Be sure to pass a comma delimited string, properly quoted, with the first row representing column names. Also, the string must only contain one newline characters (\n) between row 1 (the column names) and row 2 (the data row) since those will cause the parser to fetch multiple rows. Beyond the two rows, in this mode of inferring column names **transformDelimited.js** will ignore additional lines a multi-line CSV string.
+Be sure to pass a valid file path to a comma delimited file, with the same column count as the **-c** argument (or if you have column names in row 1, you can pass **-n**).
 
 ### Use the the package classes directly in your own code
 
 You may also use the helper classes directly in your project as demonstrated below.
 
-****TemplateHelper****
+#### TemplateHelper
 
 **TemplateHelper** is a simple class (a very thin wrapper around HandlebarsJS) to transform a template given the passed context data.
 
@@ -81,7 +95,7 @@ const contextData = {
 // Note: This will perform a Disk Io operation on every call. If you are calling 
 // muliple times in succession, you may have performance issues.
 const templateOutput = TemplateHelper.applyTemplateWithFilePath(
-  './templates/simple-example.json',
+  './templates/simple-example.hbs',
   contextData
 );
 
@@ -111,7 +125,7 @@ const contextData = {
 
 // Load template body from file
 let templateBody = TemplateHelper.loadTemplate(
-  './templates/simple-example.json'
+  './templates/simple-example.hbs'
 );
 
 // Apply a template to on your data. In addition applyTemplate does
@@ -128,7 +142,77 @@ console.log(templateOutput);
 
 See the example file provided to try out this example: **example-using-TemplateHelper-DiskIoOptimized.js**.
 
-****XSVHelper with explicit column names****
+**TemplateHelper Example with Custom Handlebars Helpers**
+
+The super-transformer package supports Handlebars custom helpers. The Handlebars custom helpers are defined in a special javascript file that has a certain structure:
+
+You can define Handlebars helpers in a special JavaScript file. For example:
+
+```javascript
+function loadHandlebarsHelpers(Handlebars) {
+  // As many Handlebars custom helper registrations as you want
+}
+module.exports.loadHandlebarsHelpers = loadHandlebarsHelpers;
+```
+
+In the above, you add as many `Handlebars.registerHelper(...)` as you want, using the standard Handlebars custom helpers syntax described here: https://handlebarsjs.com/guide/#custom-helpers.
+
+For example, here is a complete file:
+
+```javascript
+function loadHandlebarsHelpers(Handlebars) {
+  Handlebars.registerHelper('yell', (someString) => {
+    return someString.toUpperCase();
+  });
+}
+module.exports.loadHandlebarsHelpers = loadHandlebarsHelpers;
+```
+
+Once you define your helper file, you use it like this:
+
+```javascript
+// Dependencies
+const path = require('path');
+// Wire-in the custom Handlebars helpers (be sure to RESOLVE the path, otherwise the file will likely not be found!)
+TemplateHelper.loadHandlebarsHelpers(path.resolve('./templates/example-handlebars-helpers.js'));
+```
+
+Here is a complete example:
+
+```javascript
+// Include the library
+const TemplateHelper = require('super-transformer').TemplateHelper;
+// Dependencies
+const path = require('path');
+
+// Create a data object to suit your needs
+const contextData = {
+  customer: {
+    name: 'John',
+  },
+};
+
+// Wire-in the custom Handlebars helpers (be sure to RESOLVE the path, otherwise the file will likely not be found!)
+TemplateHelper.loadHandlebarsHelpers(path.resolve('./templates/example-handlebars-helpers.js'));
+
+// Load template body from file
+let templateBody = TemplateHelper.loadTemplate(
+  './templates/simple-example.hbs'
+);
+
+// Apply a template to your data
+const templateOutput = TemplateHelper.applyTemplate(templateBody, contextData);
+
+// Do whatever you want with the templateOutput
+console.log(templateOutput);
+
+// Outputs
+// {  "customerName": "JOHN"}
+```
+
+See the example file provided to try out this example: **example-using-TemplateHelper-with-Handlebars-helpers.js**.
+
+#### XSVHelper with explicit column names
 
 **XSVHelper** is a class (a very thin wrapper around csv-parse) that parses out a CSV string (and a column layout) into a JSON object. The returned object is always an array of objects, actually. Note that if the passed CSV string has newline characters (\n), the parser will add multiple items into the array as demonstrated in the example below.
 
@@ -173,7 +257,7 @@ console.log(parsedJsonObject);
 
 See the example file provided to try out this example: **example-using-XSVHelper.js**.
 
-****XSVHelper with inferred column names****
+#### XSVHelper with inferred column names
 
 **XSVHelper** is a class (a very thin wrapper around csv-parse) that parses out a CSV string (and a column layout) into a JSON object. The returned object is always an array of objects, actually. Note that if the passed CSV string has newline characters (\n) except between row 1 (column names) and row 2 (data row), the parser will add multiple items into the array as demonstrated in the example below.
 
